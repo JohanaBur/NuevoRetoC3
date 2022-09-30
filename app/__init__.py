@@ -1,4 +1,3 @@
-# Carlos Velasco
 import os
 from . import dbc
 

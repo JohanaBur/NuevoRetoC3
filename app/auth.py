@@ -21,12 +21,12 @@ def activate():
         if g.user:
             return redirect(url_for('inbox.show'))
         
-        if request.method == ?: 
+        if request.method == 'GET': 
             number = request.args['auth'] 
             
-            db = ?
+            db = get_db()
             attempt = db.execute(
-                QUERY, (number, utils.U_UNCONFIRMED)
+                QUERY , (number, utils.U_UNCONFIRMED)
             ).fetchone()
 
             if attempt is not None:
@@ -44,41 +44,41 @@ def activate():
         return redirect(url_for('auth.login'))
 
 
-@bp.route('/register', methods=?)
+@bp.route('/register', methods=('GET','POST'))
 def register():
     try:
         if g.user:
             return redirect(url_for('inbox.show'))
       
-        if request.method == ?:    
-            username = ?
-            password = ?
-            email = ?
+        if request.method == 'POST':    
+            username = request.form['username']
+            password = request.form['password']
+            email = request.form['email']
             
-            db = ?
+            db = get_db()
             error = None
 
-            if ?:
+            if not username:
                 error = 'Username is required.'
                 flash(error)
-                return render_template(TEMP)
+                return render_template('auth/register.html')
             
             if not utils.isUsernameValid(username):
                 error = "Username should be alphanumeric plus '.','_','-'"
                 flash(error)
-                return render_template(TEMP)
+                return render_template('auth/register.html')
 
-            if ?:
+            if not password:
                 error = 'Password is required.'
                 flash(error)
                 return render_template('auth/register.html')
 
-            if db.execute(QUERY, (username,)).fetchone() is not None:
+            if db.execute('SELECT id FROM user WHERE username = ?', (username,)).fetchone() is not None:
                 error = 'User {} is already registered.'.format(username)
                 flash(error)
-                return render_template(TEMP)
+                return render_template('auth/register.hmtl')
             
-            if (? or (not utils.isEmailValid(email))):
+            if (not email or (not utils.isEmailValid(email))):
                 error =  'Email address invalid.'
                 flash(error)
                 return render_template('auth/register.html')
@@ -86,7 +86,7 @@ def register():
             if db.execute('SELECT id FROM user WHERE email = ?', (email,)).fetchone() is not None:
                 error =  'Email {} is already registered.'.format(email)
                 flash(error)
-                return render_template(TEMP)
+                return render_template('auth/register.hmtl')
             
             if (not utils.isPasswordValid(password)):
                 error = 'Password should contain at least a lowercase letter, an uppercase letter and a number with 8 characters long'
@@ -114,7 +114,7 @@ def register():
             flash('Please check in your registered email to activate your account')
             return render_template('auth/login.html') 
 
-        return render_template(TEMP) 
+        return render_template('auth/register.html') 
     except:
         return render_template('auth/register.html')
 

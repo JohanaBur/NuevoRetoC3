@@ -1,5 +1,7 @@
 import functools
 import random
+import sqlite3
+from turtle import clear
 import flask
 from . import utils
 
@@ -24,7 +26,7 @@ def activate():
         if request.method == ?: 
             number = request.args['auth'] 
             
-            db = ?
+            db = get_db()
             attempt = db.execute(
                 QUERY, (number, utils.U_UNCONFIRMED)
             ).fetchone()
@@ -73,7 +75,7 @@ def register():
                 flash(error)
                 return render_template('auth/register.html')
 
-            if db.execute(QUERY, (username,)).fetchone() is not None:
+            if db.execute('SELECT id FROM user WHERE username = ?', (username,)).fetchone() is not None:##
                 error = 'User {} is already registered.'.format(username)
                 flash(error)
                 return render_template(TEMP)
@@ -119,22 +121,22 @@ def register():
         return render_template('auth/register.html')
 
     
-@bp.route('/confirm', methods=?)
+@bp.route('/confirm', methods=['GET','POST'])
 def confirm():
     try:
         if g.user:
             return redirect(url_for('inbox.show'))
 
-        if request.method == ?: 
-            password = ? 
-            password1 = ?
+        if request.method == 'POST': 
+            password = request.form['password'] #?
+            password1 = request.form['password1']#?
             authid = request.form['authid']
 
             if not authid:
                 flash('Invalid')
                 return render_template('auth/forgot.html')
 
-            if ?:
+            if not password:
                 flash('Password required')
                 return render_template('auth/change.html', number=authid)
 
@@ -142,7 +144,7 @@ def confirm():
                 flash('Password confirmation required')
                 return render_template(TEMP, number=authid)
 
-            if ? != password:
+            if password1 != password:
                 flash('Both values should be the same')
                 return render_template(TEMP, number=authid)
 
@@ -151,10 +153,13 @@ def confirm():
                 flash(error)
                 return render_template('auth/change.html', number=authid)
 
-            db = ?
-            attempt = db.execute(
-                QUERY, (authid, utils.F_ACTIVE)
+            db = get_db()
+            attempt = db.execute(QUERY, (authid, utils.F_ACTIVE)
             ).fetchone()
+            #  if db.execute('SELECT id FROM user WHERE email = ?', (email,)).fetchone() is not None:
+            #     error =  'Email {} is already registered.'.format(email)
+            #     flash(error)
+            #     return render_template(TEMP)
             
             if attempt is not None:
                 db.execute(
@@ -182,10 +187,10 @@ def change():
         if g.user:
             return redirect(url_for('inbox.show'))
         
-        if request.method == ?: 
+        if request.method == 'POST': 
             number = request.args['auth'] 
             
-            db = ?
+            db = get_db() #sqlite3??
             attempt = db.execute(
                 QUERY, (number, utils.F_ACTIVE)
             ).fetchone()
@@ -305,7 +310,7 @@ def load_logged_in_user():
         
 @bp.route('/logout')
 def logout():
-    session.?
+    session.pop('username', None) ##
     return redirect(url_for('auth.login'))
 
 

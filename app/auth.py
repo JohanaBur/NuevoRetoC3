@@ -21,20 +21,20 @@ def activate():
         if g.user:
             return redirect(url_for('inbox.show'))
         
-        if request.method == 'GET': 
+        if request.method == "GET": 
             number = request.args['auth'] 
             
             db = get_db()
             attempt = db.execute(
-                'SELECT * FROM activationlink WHERE challenge = ? AND state = ? AND CURRENT_TIMESTAMP BETWEEN created AND validuntil' , (number, utils.U_UNCONFIRMED)
+                "select * from activationlink where challenge=? and state =? and CURRENT_TIMESTAMP between created and validuntil" , (number, utils.U_UNCONFIRMED)
             ).fetchone()
 
             if attempt is not None:
                 db.execute(
-                    'UPDATE activationlink SET state = ? WHERE id = ?', (utils.U_CONFIRMED, attempt['id'])
+                    "update activationlink set state=? where id=?", (utils.U_CONFIRMED, attempt['id'])
                 )
                 db.execute(
-                    'INSERT INTO user (username,password,salt,email) values (?,?,?,?)', (attempt['username'], attempt['password'], attempt['salt'], attempt['email'])
+                    "insert into user (username,password,salt,email) values (?,?,?,?)", (attempt['username'], attempt['password'], attempt['salt'], attempt['email'])
                 )
                 db.commit()
 
@@ -44,16 +44,16 @@ def activate():
         return redirect(url_for('auth.login'))
 
 
-@bp.route('/register', methods=('GET','POST'))
+@bp.route('/register', methods=('GET', 'POST'))
 def register():
     try:
         if g.user:
             return redirect(url_for('inbox.show'))
       
-        if request.method == 'POST':    
-            username = request.form['username']
-            password = request.form['password']
-            email = request.form['email']
+        if request.method == "POST":    
+            username = request.form["username"]
+            password = request.form["password"]
+            email = request.form["email"]
             
             db = get_db()
             error = None
@@ -73,10 +73,10 @@ def register():
                 flash(error)
                 return render_template('auth/register.html')
 
-            if db.execute('SELECT id FROM user WHERE username = ?', (username,)).fetchone() is not None:
+            if db.execute("select id from user where username=?", (username,)).fetchone() is not None:
                 error = 'User {} is already registered.'.format(username)
                 flash(error)
-                return render_template('auth/register.hmtl')
+                return render_template('auth/register.html')
             
             if (not email or (not utils.isEmailValid(email))):
                 error =  'Email address invalid.'
@@ -86,7 +86,7 @@ def register():
             if db.execute('SELECT id FROM user WHERE email = ?', (email,)).fetchone() is not None:
                 error =  'Email {} is already registered.'.format(email)
                 flash(error)
-                return render_template('auth/register.hmtl')
+                return render_template('auth/register.html')
             
             if (not utils.isPasswordValid(password)):
                 error = 'Password should contain at least a lowercase letter, an uppercase letter and a number with 8 characters long'
@@ -98,8 +98,7 @@ def register():
             number = hex(random.getrandbits(512))[2:]
 
             db.execute(
-                'INSERT INTO activationlink (challenge,state,username,password,salt,email)',
-                (number, utils.U_UNCONFIRMED, username, hashP, salt, email)
+                "insert into activationlink (challenge,state,username,password,salt,email) values (?,?,?,?,?,?)",(number, utils.U_UNCONFIRMED, username, hashP, salt, email)
             )
             db.commit()
 

@@ -18,10 +18,10 @@ def getDB():
 def show():
     db = get_db()
     messages = db.execute(
-        ""
+        "SELECT message.subject, user.username, message.created, message.body FROM message JOIN user on message.from_id=user.id WHERE message.to_id="+str(g.user['id'])+" ORDER BY message.created desc"
     ).fetchall()
 
-    return render_template('inbox/send.html', messages=messages)
+    return render_template('inbox/show.html', messages=messages)
 
 
 @bp.route('/send', methods=('GET', 'POST'))
@@ -62,7 +62,7 @@ def send():
         else:
             db = get_db()
             db.execute(
-                "insert into message (from_id,to_id,subject,body) ",
+                "insert into message (from_id,to_id,subject,body) values (?,?,?,?)",
                 (g.user['id'], userto['id'], subject, body)
             )
             db.commit()

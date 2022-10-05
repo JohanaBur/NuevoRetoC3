@@ -106,11 +106,11 @@ def register():
                 'Select user,password from credentials where name=?', (utils.EMAIL_APP,)
             ).fetchone()
 
-            content = 'Hello there, to activate your account, please click on this link ' + flask.url_for('auth.activate', _external=True) + '?auth=' + number
+            content = 'Hola, Bienvenido!, estas a un paso de registrarte, para activar tu cuenta, haga clic en este enlace ' + flask.url_for('auth.activate', _external=True) + '?auth=' + number
             
-            send_email(credentials, receiver=email, subject='Activate your account', message=content)
+            send_email(credentials, receiver=email, subject='Activa tu cuenta en Message.com', message=content)
             
-            flash('Please check in your registered email to activate your account')
+            flash('Por favor revise su correo electrónico registrado para activar su cuenta')
             return render_template('auth/login.html') 
 
         return render_template('auth/register.html') 
@@ -186,7 +186,7 @@ def change():
             
             db = get_db()
             attempt = db.execute(
-                "select * from forgotlink where challenge=? and state =? and CURRENT_TIMESTAMP between created and validuntil", (number, utils.F_ACTIVE)
+                "select * from forgotlink where challenge=? and state =? and CURRENT_TIMESTAMP between created and validuntil", (number, utils.F_ACTIVE)#Challenge es el link generado para recuperacion de contraseña
             ).fetchone()
             
             if attempt is not None:
